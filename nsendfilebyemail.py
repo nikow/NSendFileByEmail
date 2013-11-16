@@ -1,21 +1,30 @@
+#!/usr/bin/env python
+
 import os
 import sys
 from smtplib import SMTP
 from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
+from getpass import getpass
 
 __author__ = 'nikow'
 COMMASPACE = ', '
 
 #Sender
-fromaddr = "youremail"
-username = "youruser"
-password = "yourpassword"
-smtp_addr = "smtp_address"
+print "Insert your e-mail address:"
+fromaddr = sys.stdin.readline()[:-1]#"youremail"
+print "Insert your username:"
+username = sys.stdin.readline()[:-1]#"youruser"
+password = getpass("Insert your password:\n")#"yourpassword"
+print "Insert SMTP adress:"
+smtp_addr = sys.stdin.readline()[:-1]#"smtp_address"
 
 #Receiver
-recvaddr = sys.argv[1]
+print "Insert destination adress:"
+recvaddr = sys.stdin.readline()[:-1]#sys.argv[1]
+
+print "Data collected."
 
 def load_file(filename):
     file_pointer = open(filename, "rb")
@@ -49,8 +58,11 @@ def send_email(message, smtp_address, username, password, debug=False):
     server.sendmail(fromaddr, recvaddr, message.as_string())
     server.quit()
 
-for filename in sys.argv[2:]:
+print "Prepared to send messages..."
+
+for filename in sys.argv:
     print "Sending", filename,": ",
+    sys.stdout.flush()
     message = prepare_email(fromaddr, recvaddr, filename)
     send_email(message, smtp_addr, username, password)
-    print"[Done!]"
+    print "[Done!]"
