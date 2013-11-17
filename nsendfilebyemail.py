@@ -79,6 +79,7 @@ filenames = arguments.files
 print "Data collected."
 print len(filenames), "files in queue"
 
+
 def load_data_from_file(filename):
     file_pointer = open(filename, "rb")
     data = file_pointer.read()
@@ -119,8 +120,8 @@ def send_email(message, smtp_address, username, password, tls=True, debug=False)
 
 print "Prepared to send messages..."
 
-for file_num in xrange(0, len(arguments.files)):
-    print "(%d/%d) Sending" % (file_num / len(filenames), len(filenames)), filenames[file_num], ": ",
+for file_num in xrange(0, len(filenames)):
+    print "(%d/%d) Sending" % (file_num, len(filenames)), filenames[file_num], ": ",
     sys.stdout.flush()
     message = prepare_email(fromaddr, destaddr, filenames[file_num])
     send_email(message, smtp_addr, username, password, debug=smtp_debug, tls=smtp_tls)
