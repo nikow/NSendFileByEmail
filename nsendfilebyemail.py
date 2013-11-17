@@ -50,7 +50,7 @@ password = None
 if arguments.smtp_password == None:
     password = getpass("Insert your password:\n")#"yourpassword"
 else:
-    password = smtp_password
+    password = arguments.smtp_password
 
 smtp_addr = None
 if arguments.smtp_address == None:
@@ -65,12 +65,12 @@ if arguments.destination_address == None:
     print "Insert destination adress:"
     destaddr = sys.stdin.readline()[:-1]#sys.argv[1]
 else:
-    destaddr = arguments.destination_address
+    destaddr = COMMASPACE.join(arguments.destination_address)
 
 print "Data collected."
 
 
-def load_file(filename):
+def load_data_from_file(filename):
     file_pointer = open(filename, "rb")
     data = file_pointer.read()
     file_pointer.close()
@@ -78,7 +78,7 @@ def load_file(filename):
 
 
 def prepare_attachment(filename):
-    data = load_file(filename)
+    data = load_data_from_file(filename)
     attachment = MIMEBase("application", "octet-stream")
     attachment.set_payload(data)
     encoders.encode_base64(attachment)
@@ -94,6 +94,7 @@ def prepare_email(fromaddr, recvaddr, filename):
 
     attachment = prepare_attachment(filename)
     message.attach(attachment)
+
     return message
 
 
@@ -111,7 +112,7 @@ print "Prepared to send messages..."
 
 for filename in arguments.files:
     print "Sending", filename, ": ",
-    sys.stdout.flush()
     message = prepare_email(fromaddr, destaddr, filename)
-    send_email(message, smtp_addr, username, password)
+    send_email(message, smtp_addr, username, password, debug=True)
+    print message
     print "[Done!]"
