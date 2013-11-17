@@ -94,17 +94,18 @@ def prepare_email(fromaddr, recvaddr, filename):
     message.attach(attachment)
     return message
 
-def send_email(message, smtp_address, username, password, debug=False):
+def send_email(message, smtp_address, username, password, tls=True, debug=False):
     server = SMTP(smtp_address)
     server.set_debuglevel(debug)
-    server.starttls()
+    if tls:
+        server.starttls()
     server.login(username,password)
     server.sendmail(fromaddr, destaddr, message.as_string())
     server.quit()
 
 print "Prepared to send messages..."
 
-for filename in sys.argv:
+for filename in arguments.files:
     print "Sending", filename,": ",
     sys.stdout.flush()
     message = prepare_email(fromaddr, destaddr, filename)
