@@ -18,18 +18,23 @@ parser.add_argument('-u', dest='smtp_username',
                     help='SMTP username')
 parser.add_argument('-p', dest='smtp_password',
                     help='SMTP password')
+parser.add_argument('-nt', '--no-tls', dest='smtp_tls', action='store_false',
+                    help="Disable TLS during SMTP connection.")
+parser.add_argument('--debug', dest='smtp_debug', action='store_true',
+                    help='Turn on SMTP connection debuging messages.')
 parser.add_argument('-r', dest='return_address',
                     help='Return address')
 parser.add_argument('-d', dest='destination_address', action='append',
                     help='Destination address (Can be multiple!)')
-#parser.add_argument('--debug', action='store_true',
-#    help='Turn on debug.')
-#parser.add_argument('--gmail', '-g', action='store_true',
-#    help='Turn on GMail mode.')
+parser.add_argument('--gmail', '-g', dest='smtp_gmail', action='store_true',
+                    help='Turn on GMail mode. (overwrites -s)')
 parser.add_argument('files', nargs='+',
                     help='Files to transfer')
 
 arguments = parser.parse_args(sys.argv[1:])
+
+smtp_debug = arguments.smtp_debug
+smtp_tls = arguments.smtp_tls
 
 #Sender
 fromaddr = None
@@ -53,7 +58,9 @@ else:
     password = arguments.smtp_password
 
 smtp_addr = None
-if arguments.smtp_address == None:
+if arguments.smtp_gmail:
+    smtp_addr = 'smtp.gmail.com:587'
+elif arguments.smtp_address == None:
     print "Insert SMTP adress:"
     smtp_addr = sys.stdin.readline()[:-1]#"smtp_address"
 else:
@@ -67,8 +74,10 @@ if arguments.destination_address == None:
 else:
     destaddr = COMMASPACE.join(arguments.destination_address)
 
-print "Data collected."
+filenames = arguments.files
 
+print "Data collected."
+print len(filenames), "files in queue"
 
 def load_data_from_file(filename):
     file_pointer = open(filename, "rb")
@@ -110,9 +119,9 @@ def send_email(message, smtp_address, username, password, tls=True, debug=False)
 
 print "Prepared to send messages..."
 
-for filename in arguments.files:
-    print "Sending", filename, ": ",
-    message = prepare_email(fromaddr, destaddr, filename)
-    send_email(message, smtp_addr, username, password, debug=True)
-    print message
+for file_num in xrange(0, len(arguments.files)):
+    print "(%d/%d) Sending" % (file_num / len(filenames), len(filenames)), filenames[file_num], ": ",
+    sys.stdout.flush()
+    message = prepare_email(fromaddr, destaddr, filenames[file_num])
+    send_email(message, smtp_addr, username, password, debug=smtp_debug, tls=smtp_tls)
     print "[Done!]"
